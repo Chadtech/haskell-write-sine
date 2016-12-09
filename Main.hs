@@ -1,14 +1,14 @@
 module Main where
 
-import Data.ByteString as Bytes
+import Data.ByteString (writeFile, concat)
 
-import Data.List             as List
-import Data.ByteString.Char8 as CharBytes
+import Data.List (map, foldr)
+import Data.ByteString.Char8 (pack)
 import Data.Int (Int16)
-import Data.Binary           as Binary
+import Data.Binary (encode)
 import Flow
-import Prelude
-import Data.ByteString.Lazy  as BytesLazy
+import Prelude hiding (map, foldr, writeFile, concat)
+import Data.ByteString.Lazy (toStrict)
 
 
 main :: IO ()
@@ -29,11 +29,11 @@ main = do
 
 print' :: String -> IO ()
 print' =
-  Prelude.putStrLn
+  putStrLn
 
 getUserInput :: IO String
 getUserInput =
-  Prelude.getLine
+  getLine
 
 
 -- Make Audio Data
@@ -42,7 +42,7 @@ getUserInput =
 sineWave :: Float -> Integer -> [ Int16 ]
 sineWave freq duration =
   [ 0 .. (duration - 1) ]
-  |>List.map (getAmplitude freq)
+  |>map (getAmplitude freq)
 
 getAmplitude :: Float -> Integer -> Int16
 getAmplitude freq index =
@@ -65,10 +65,9 @@ writeAudio :: String -> [ Int16 ] -> IO ()
 writeAudio fn audioData =
   let fileName = fn ++ ".audio" in
   audioData
-  |>List.map encode
-  |>List.map toStrict 
-  |>Bytes.concat
-  |>Bytes.writeFile fileName
+  |>map (toStrict . encode)
+  |>concat
+  |>writeFile fileName
 
 
 -- Write it to disk 
@@ -79,13 +78,13 @@ logAudio :: String -> [ Int16 ] -> IO ()
 logAudio fn audioData =
   let fileName = fn ++ ".log" in
   audioData
-  |>List.map lineate
-  |>List.foldr (++) ""
-  |>CharBytes.pack
-  |>Bytes.writeFile fileName
+  |>map lineate
+  |>foldr (++) ""
+  |>pack
+  |>writeFile fileName
 
 lineate :: Int16 -> String
 lineate i =
-  (Prelude.show i) ++ "\n"
+  (show i) ++ "\n"
 
 
